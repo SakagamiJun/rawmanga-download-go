@@ -1,0 +1,15 @@
+{
+  "jobID": "job_01",
+  "chapterID": "25",
+  "chapterTitle": "Chapter 25",
+  "pageIndex": 4,
+  "status": "running",
+  "downloadedPages": 4,
+  "totalPages": 32,
+  "currentFile": "004.jpg",
+  "bytesPerSec": 524288,
+  "error": "",
+  "localStatus": "partial",
+  "completedAt": ""
+}
+

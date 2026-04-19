@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: 243 247 252;
+  --fg: 19 29 40;
+  --muted: 226 234 242;
+  --muted-fg: 98 113 126;
+  --primary: 27 88 196;
+  --primary-fg: 255 255 255;
+  --card: 255 255 255;
+  --border: 210 222 233;
+  --success: 20 141 92;
+  --warning: 202 124 14;
+  --danger: 198 48 69;
+  --app-sidebar: rgba(244, 248, 252, 0.8);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: 9 14 23;
+  --fg: 238 244 248;
+  --muted: 31 43 58;
+  --muted-fg: 143 157 171;
+  --primary: 99 170 255;
+  --primary-fg: 11 17 27;
+  --card: 17 24 36;
+  --border: 43 58 77;
+  --success: 76 212 156;
+  --warning: 240 177 79;
+  --danger: 255 117 138;
+  --app-sidebar: rgba(15, 21, 33, 0.86);
+}
+
+body {
+  @apply min-h-screen bg-background text-foreground antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(71, 151, 255, 0.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(33, 191, 124, 0.12), transparent 28%);
+}
+
+#root {
+  @apply min-h-screen;
+}
+
+.app-window-drag-region {
+  --wails-draggable: drag;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app-window-drag-region button,
+.app-window-drag-region input,
+.app-window-drag-region select,
+.app-window-drag-region textarea,
+.app-window-drag-region a,
+.app-window-drag-region [role="button"],
+.app-window-no-drag {
+  --wails-draggable: no-drag;
+}

@@ -1,0 +1,10 @@
+{
+  "outputRoot": "/Users/example/Downloads/KLZ9",
+  "maxConcurrentDownloads": 6,
+  "retryCount": 3,
+  "requestTimeoutSec": 30,
+  "localeMode": "system",
+  "locale": "en",
+  "themeMode": "system"
+}
+
