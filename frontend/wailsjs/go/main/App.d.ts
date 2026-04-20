@@ -7,6 +7,8 @@ export function AssetHandler():Promise<http.Handler>;
 
 export function GetReaderManifest(arg1:string):Promise<contracts.ReaderManifest>;
 
+export function GetReaderProgress(arg1:string):Promise<contracts.ReaderProgress>;
+
 export function GetSettings():Promise<contracts.AppSettings>;
 
 export function ListDownloadJobs():Promise<Array<contracts.DownloadJob>>;
@@ -24,5 +26,7 @@ export function ResumeJob(arg1:string):Promise<void>;
 export function RetryFailed(arg1:string):Promise<void>;
 
 export function ScanLocalState(arg1:string):Promise<Array<contracts.LocalChapterState>>;
+
+export function UpdateReaderProgress(arg1:contracts.ReaderProgress):Promise<contracts.ReaderProgress>;
 
 export function UpdateSettings(arg1:contracts.AppSettings):Promise<contracts.AppSettings>;

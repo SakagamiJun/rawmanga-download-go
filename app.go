@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/sakagamijun/rawmanga-download-go/internal/contracts"
 	"github.com/sakagamijun/rawmanga-download-go/internal/download"
@@ -224,6 +225,39 @@ func (a *App) GetReaderManifest(mangaID string) (contracts.ReaderManifest, error
 	}
 
 	return download.GetReaderManifest(a.settings.Get().OutputRoot, mangaID)
+}
+
+func (a *App) GetReaderProgress(mangaID string) (contracts.ReaderProgress, error) {
+	if err := a.ensureReady(); err != nil {
+		return contracts.ReaderProgress{}, err
+	}
+
+	progress, found, err := a.store.GetReaderProgress(mangaID)
+	if err != nil {
+		return contracts.ReaderProgress{}, err
+	}
+	if !found {
+		return contracts.ReaderProgress{MangaID: mangaID}, nil
+	}
+
+	return progress, nil
+}
+
+func (a *App) UpdateReaderProgress(input contracts.ReaderProgress) (contracts.ReaderProgress, error) {
+	if err := a.ensureReady(); err != nil {
+		return contracts.ReaderProgress{}, err
+	}
+
+	if input.Page < 1 {
+		input.Page = 1
+	}
+	input.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	if err := a.store.SaveReaderProgress(input); err != nil {
+		return contracts.ReaderProgress{}, err
+	}
+
+	return input, nil
 }
 
 func (a *App) AssetHandler() http.Handler {

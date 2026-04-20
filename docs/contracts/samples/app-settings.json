@@ -5,6 +5,7 @@
   "requestTimeoutSec": 30,
   "localeMode": "system",
   "locale": "en",
-  "themeMode": "system"
+  "themeMode": "system",
+  "readerScrollCachePages": 6,
+  "autoRestoreReaderProgress": true
 }
-

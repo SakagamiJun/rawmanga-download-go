@@ -47,6 +47,12 @@ export const appAdapter: AppAdapter = {
   getReaderManifest(mangaID) {
     return currentAdapter().getReaderManifest(mangaID);
   },
+  getReaderProgress(mangaID) {
+    return currentAdapter().getReaderProgress(mangaID);
+  },
+  updateReaderProgress(input) {
+    return currentAdapter().updateReaderProgress(input);
+  },
   subscribe(eventName, callback) {
     return currentAdapter().subscribe(eventName, callback);
   },

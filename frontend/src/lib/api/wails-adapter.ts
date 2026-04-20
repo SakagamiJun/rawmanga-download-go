@@ -6,6 +6,7 @@ import type {
   ParsedMangaResult,
   QueueDownloadRequest,
   ReaderManifest,
+  ReaderProgress,
 } from "@/lib/contracts";
 import type { AppAdapter } from "@/lib/api/adapter";
 import { getWailsApp, getWailsRuntime } from "@/lib/runtime";
@@ -55,6 +56,14 @@ export class WailsAdapter implements AppAdapter {
 
   async getReaderManifest(mangaID: string) {
     return (await getWailsApp()?.GetReaderManifest?.(mangaID)) as ReaderManifest;
+  }
+
+  async getReaderProgress(mangaID: string) {
+    return (await getWailsApp()?.GetReaderProgress?.(mangaID)) as ReaderProgress;
+  }
+
+  async updateReaderProgress(input: ReaderProgress) {
+    return (await getWailsApp()?.UpdateReaderProgress?.(input)) as ReaderProgress;
   }
 
   subscribe(eventName: string, callback: (payload: unknown) => void) {

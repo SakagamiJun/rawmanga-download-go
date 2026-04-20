@@ -13,6 +13,8 @@ describe("resolveLocale", () => {
           localeMode: "system",
           locale: "en",
           themeMode: "system",
+          readerScrollCachePages: 6,
+          autoRestoreReaderProgress: true,
         },
         ["zh-Hans-CN"]
       )
@@ -29,6 +31,8 @@ describe("resolveLocale", () => {
         localeMode: "manual",
         locale: "ja",
         themeMode: "system",
+        readerScrollCachePages: 6,
+        autoRestoreReaderProgress: true,
       })
     ).toBe("ja");
   });
@@ -39,4 +43,3 @@ describe("resolveTheme", () => {
     expect(resolveTheme("system", true)).toBe("dark");
   });
 });
-

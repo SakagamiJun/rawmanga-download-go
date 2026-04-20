@@ -8,10 +8,12 @@ import {
   type ParsedMangaResult,
   type QueueDownloadRequest,
   type ReaderManifest,
+  type ReaderProgress,
 } from "@/lib/contracts";
 import type { AppAdapter } from "@/lib/api/adapter";
 
 const STORAGE_KEY = "klz9-downloader-settings";
+const READER_PROGRESS_STORAGE_KEY = "klz9-reader-progress";
 
 const sampleManga: ParsedMangaResult = {
   sourceURL: "https://klz9.com/otona-ni-narenai-bokura-wa.html",
@@ -46,6 +48,8 @@ const defaultSettings: AppSettings = {
   localeMode: "system",
   locale: "en",
   themeMode: "system",
+  readerScrollCachePages: 6,
+  autoRestoreReaderProgress: true,
 };
 
 function createMockReaderManifest(index: number, title: string): ReaderManifest {
@@ -208,6 +212,25 @@ export class MockAdapter implements AppAdapter {
     return mockReaderManifests.find((manifest) => manifest.mangaID === mangaID) ?? mockReaderManifests[0];
   }
 
+  async getReaderProgress(mangaID: string) {
+    return this.readReaderProgress(mangaID);
+  }
+
+  async updateReaderProgress(input: ReaderProgress) {
+    const progress: ReaderProgress = {
+      mangaID: input.mangaID,
+      chapterID: input.chapterID,
+      page: Math.max(1, input.page),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const allProgress = this.readAllReaderProgress();
+    allProgress[progress.mangaID] = progress;
+    localStorage.setItem(READER_PROGRESS_STORAGE_KEY, JSON.stringify(allProgress));
+
+    return progress;
+  }
+
   subscribe(eventName: string, callback: Listener) {
     const listeners = this.listeners.get(eventName) ?? new Set<Listener>();
     listeners.add(callback);
@@ -226,6 +249,30 @@ export class MockAdapter implements AppAdapter {
       return { ...defaultSettings, ...(JSON.parse(raw) as AppSettings) };
     } catch {
       return defaultSettings;
+    }
+  }
+
+  private readReaderProgress(mangaID: string): ReaderProgress {
+    return (
+      this.readAllReaderProgress()[mangaID] ?? {
+        mangaID,
+        chapterID: "",
+        page: 0,
+        updatedAt: "",
+      }
+    );
+  }
+
+  private readAllReaderProgress(): Record<string, ReaderProgress> {
+    try {
+      const raw = localStorage.getItem(READER_PROGRESS_STORAGE_KEY);
+      if (!raw) {
+        return {};
+      }
+
+      return JSON.parse(raw) as Record<string, ReaderProgress>;
+    } catch {
+      return {};
     }
   }
 

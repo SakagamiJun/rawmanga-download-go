@@ -10,6 +10,10 @@ export function GetReaderManifest(arg1) {
   return window['go']['main']['App']['GetReaderManifest'](arg1);
 }
 
+export function GetReaderProgress(arg1) {
+  return window['go']['main']['App']['GetReaderProgress'](arg1);
+}
+
 export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
 }
@@ -44,6 +48,10 @@ export function RetryFailed(arg1) {
 
 export function ScanLocalState(arg1) {
   return window['go']['main']['App']['ScanLocalState'](arg1);
+}
+
+export function UpdateReaderProgress(arg1) {
+  return window['go']['main']['App']['UpdateReaderProgress'](arg1);
 }
 
 export function UpdateSettings(arg1) {

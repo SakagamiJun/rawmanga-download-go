@@ -8,6 +8,8 @@ export namespace contracts {
 	    localeMode: string;
 	    locale: string;
 	    themeMode: string;
+	    readerScrollCachePages: number;
+	    autoRestoreReaderProgress: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppSettings(source);
@@ -22,6 +24,8 @@ export namespace contracts {
 	        this.localeMode = source["localeMode"];
 	        this.locale = source["locale"];
 	        this.themeMode = source["themeMode"];
+	        this.readerScrollCachePages = source["readerScrollCachePages"];
+	        this.autoRestoreReaderProgress = source["autoRestoreReaderProgress"];
 	    }
 	}
 	export class ChapterItem {
@@ -317,6 +321,25 @@ export namespace contracts {
 		    }
 		    return a;
 		}
+	}
+	
+	export class ReaderProgress {
+	    mangaID: string;
+	    chapterID: string;
+	    page: number;
+	    updatedAt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ReaderProgress(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.mangaID = source["mangaID"];
+	        this.chapterID = source["chapterID"];
+	        this.page = source["page"];
+	        this.updatedAt = source["updatedAt"];
+	    }
 	}
 
 }

@@ -126,13 +126,15 @@ type LocalChapterState struct {
 }
 
 type AppSettings struct {
-	OutputRoot             string     `json:"outputRoot"`
-	MaxConcurrentDownloads int        `json:"maxConcurrentDownloads"`
-	RetryCount             int        `json:"retryCount"`
-	RequestTimeoutSec      int        `json:"requestTimeoutSec"`
-	LocaleMode             LocaleMode `json:"localeMode"`
-	Locale                 string     `json:"locale"`
-	ThemeMode              ThemeMode  `json:"themeMode"`
+	OutputRoot                string     `json:"outputRoot"`
+	MaxConcurrentDownloads    int        `json:"maxConcurrentDownloads"`
+	RetryCount                int        `json:"retryCount"`
+	RequestTimeoutSec         int        `json:"requestTimeoutSec"`
+	LocaleMode                LocaleMode `json:"localeMode"`
+	Locale                    string     `json:"locale"`
+	ThemeMode                 ThemeMode  `json:"themeMode"`
+	ReaderScrollCachePages    int        `json:"readerScrollCachePages"`
+	AutoRestoreReaderProgress bool       `json:"autoRestoreReaderProgress"`
 }
 
 type LibraryManga struct {
@@ -171,4 +173,11 @@ type ReaderPage struct {
 	PageIndex    int    `json:"pageIndex"`
 	FileName     string `json:"fileName"`
 	SourceURL    string `json:"sourceURL"`
+}
+
+type ReaderProgress struct {
+	MangaID   string `json:"mangaID"`
+	ChapterID string `json:"chapterID"`
+	Page      int    `json:"page"`
+	UpdatedAt string `json:"updatedAt"`
 }

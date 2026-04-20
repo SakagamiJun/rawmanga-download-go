@@ -101,6 +101,8 @@ export interface AppSettings {
   localeMode: LocaleMode;
   locale: Locale;
   themeMode: ThemeMode;
+  readerScrollCachePages: number;
+  autoRestoreReaderProgress: boolean;
 }
 
 export interface LibraryManga {
@@ -139,6 +141,13 @@ export interface ReaderPage {
   pageIndex: number;
   fileName: string;
   sourceURL: string;
+}
+
+export interface ReaderProgress {
+  mangaID: string;
+  chapterID: string;
+  page: number;
+  updatedAt: string;
 }
 
 export const EVENTS = {

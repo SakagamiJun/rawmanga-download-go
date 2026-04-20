@@ -53,13 +53,15 @@ func DefaultSettings() contracts.AppSettings {
 	}
 
 	return contracts.AppSettings{
-		OutputRoot:             filepath.Join(homeDir, "Downloads", "KLZ9"),
-		MaxConcurrentDownloads: 6,
-		RetryCount:             3,
-		RequestTimeoutSec:      30,
-		LocaleMode:             contracts.LocaleModeSystem,
-		Locale:                 "en",
-		ThemeMode:              contracts.ThemeModeSystem,
+		OutputRoot:                filepath.Join(homeDir, "Downloads", "KLZ9"),
+		MaxConcurrentDownloads:    6,
+		RetryCount:                3,
+		RequestTimeoutSec:         30,
+		LocaleMode:                contracts.LocaleModeSystem,
+		Locale:                    "en",
+		ThemeMode:                 contracts.ThemeModeSystem,
+		ReaderScrollCachePages:    6,
+		AutoRestoreReaderProgress: true,
 	}
 }
 
@@ -98,6 +100,11 @@ func (s *Service) Normalize(input contracts.AppSettings) (contracts.AppSettings,
 
 	if input.RequestTimeoutSec > 0 {
 		settings.RequestTimeoutSec = input.RequestTimeoutSec
+	}
+
+	if input.ReaderScrollCachePages > 0 {
+		settings.ReaderScrollCachePages = input.ReaderScrollCachePages
+		settings.AutoRestoreReaderProgress = input.AutoRestoreReaderProgress
 	}
 
 	switch input.LocaleMode {

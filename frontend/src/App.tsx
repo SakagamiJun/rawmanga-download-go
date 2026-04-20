@@ -16,7 +16,7 @@ import {
   SunMedium,
   Telescope,
 } from "lucide-react";
-import { ReaderView, type ReaderJumpRequest } from "@/components/reader-view";
+import { ReaderController, type ReaderJumpRequest } from "@/components/reader-controller";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -620,8 +620,12 @@ export default function App() {
                 <div className="flex h-full items-center justify-center border-l border-danger/20 bg-card/14 text-sm text-danger">
                   Failed to open this manga reader.
                 </div>
+              ) : selectedLibraryID && readerQuery.data && settings ? (
+                <ReaderController jumpRequest={readerJumpRequest} manifest={readerQuery.data} mode={readerMode} settings={settings} />
               ) : selectedLibraryID && readerQuery.data ? (
-                <ReaderView jumpRequest={readerJumpRequest} manifest={readerQuery.data} mode={readerMode} />
+                <div className="flex h-full items-center justify-center border-l border-border/40 bg-card/14 text-sm text-muted-foreground">
+                  Loading reader settings…
+                </div>
               ) : (
                 <LibraryGrid
                   emptyLabel={t("library.empty")}
@@ -1077,6 +1081,37 @@ function SettingsForm({ settings, onSave }: { settings: AppSettings; onSave: (se
             />
           </Field>
 
+          <Field label={t("settings.readerScrollCachePages")} hint={t("settings.readerScrollCachePagesHint")}>
+            <Input
+              min={1}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  readerScrollCachePages: Number(event.target.value) || current.readerScrollCachePages,
+                }))
+              }
+              type="number"
+              value={form.readerScrollCachePages}
+            />
+          </Field>
+
+          <label className="flex items-start gap-3 rounded-2xl border border-border/60 bg-background/58 px-3 py-3">
+            <Checkbox
+              checked={form.autoRestoreReaderProgress}
+              className="mt-0.5"
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  autoRestoreReaderProgress: event.target.checked,
+                }))
+              }
+            />
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">{t("settings.autoRestoreReaderProgress")}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{t("settings.autoRestoreReaderProgressHint")}</p>
+            </div>
+          </label>
+
           <p className="text-[11px] text-muted-foreground">{t("settings.railHint")}</p>
 
           <Button className="w-full" type="submit">
@@ -1088,11 +1123,12 @@ function SettingsForm({ settings, onSave }: { settings: AppSettings; onSave: (se
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="grid gap-1.5">
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
       {children}
+      {hint ? <span className="text-[11px] text-muted-foreground">{hint}</span> : null}
     </label>
   );
 }

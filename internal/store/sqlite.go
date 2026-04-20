@@ -103,6 +103,12 @@ func (s *SQLiteStore) init() error {
 			updated_at TEXT NOT NULL,
 			PRIMARY KEY (manga_slug, chapter_id, page_index)
 		);`,
+		`CREATE TABLE IF NOT EXISTS reader_progress (
+			manga_id TEXT PRIMARY KEY,
+			chapter_id TEXT NOT NULL,
+			page INTEGER NOT NULL,
+			updated_at TEXT NOT NULL
+		);`,
 	}
 
 	for _, statement := range statements {
@@ -148,6 +154,42 @@ func (s *SQLiteStore) SaveSettings(settings contracts.AppSettings) error {
 
 	if _, err := s.db.Exec(query, string(raw)); err != nil {
 		return fmt.Errorf("save settings: %w", err)
+	}
+
+	return nil
+}
+
+func (s *SQLiteStore) GetReaderProgress(mangaID string) (contracts.ReaderProgress, bool, error) {
+	const query = `
+		SELECT manga_id, chapter_id, page, updated_at
+		FROM reader_progress
+		WHERE manga_id = ?
+	`
+
+	var progress contracts.ReaderProgress
+	if err := s.db.QueryRow(query, mangaID).Scan(&progress.MangaID, &progress.ChapterID, &progress.Page, &progress.UpdatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return contracts.ReaderProgress{}, false, nil
+		}
+
+		return contracts.ReaderProgress{}, false, fmt.Errorf("select reader progress: %w", err)
+	}
+
+	return progress, true, nil
+}
+
+func (s *SQLiteStore) SaveReaderProgress(progress contracts.ReaderProgress) error {
+	const query = `
+		INSERT INTO reader_progress (manga_id, chapter_id, page, updated_at)
+		VALUES (?, ?, ?, ?)
+		ON CONFLICT(manga_id) DO UPDATE SET
+			chapter_id = excluded.chapter_id,
+			page = excluded.page,
+			updated_at = excluded.updated_at
+	`
+
+	if _, err := s.db.Exec(query, progress.MangaID, progress.ChapterID, progress.Page, progress.UpdatedAt); err != nil {
+		return fmt.Errorf("save reader progress: %w", err)
 	}
 
 	return nil
