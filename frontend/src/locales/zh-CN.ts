@@ -82,6 +82,8 @@ export const zhCN = {
     subtitle: "从本地下载目录展示漫画封面，点击即可进入整本阅读。",
     chapters: "话",
     pages: "页",
+    download: "下载",
+    downloadUnavailable: "缺少源链接",
     empty: "当前输出目录下还没有已下载漫画。",
     back: "返回漫画库",
   },

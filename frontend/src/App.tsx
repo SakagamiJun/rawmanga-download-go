@@ -415,6 +415,21 @@ export default function App() {
     });
   };
 
+  const beginResolve = (url: string) => {
+    const normalizedURL = url.trim();
+    if (!normalizedURL) {
+      return;
+    }
+
+    setSourceURL(normalizedURL);
+    setParsed(null);
+    setSelectedChapterIDs([]);
+    setStatusFilter("all");
+    setPaneMode("tasks");
+    setPaneVisible(true);
+    void resolveMutation.mutateAsync(normalizedURL);
+  };
+
   return (
     <main className="h-screen overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0)),radial-gradient(circle_at_top_left,rgba(116,162,255,0.10),transparent_24%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] text-foreground">
       <div className="flex h-full border border-border/60">
@@ -631,7 +646,9 @@ export default function App() {
                   emptyLabel={t("library.empty")}
                   items={library}
                   loading={libraryQuery.isLoading}
+                  onDownload={beginResolve}
                   onOpen={setSelectedLibraryID}
+                  resolving={resolveMutation.isPending}
                 />
               )}
             </div>
@@ -666,7 +683,7 @@ export default function App() {
                             className="grid gap-2.5"
                             onSubmit={(event) => {
                               event.preventDefault();
-                              void resolveMutation.mutateAsync(sourceURL);
+                              beginResolve(sourceURL);
                             }}
                           >
                             <Input
@@ -957,13 +974,19 @@ function LibraryGrid({
   items,
   loading,
   emptyLabel,
+  onDownload,
   onOpen,
+  resolving,
 }: {
   items: LibraryManga[];
   loading: boolean;
   emptyLabel: string;
+  onDownload: (sourceURL: string) => void;
   onOpen: (mangaID: string) => void;
+  resolving: boolean;
 }) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center border-l border-border/40 bg-card/14 text-sm text-muted-foreground">
@@ -983,38 +1006,50 @@ function LibraryGrid({
   return (
     <div className="grid h-full auto-rows-max gap-px overflow-y-auto bg-border/45 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {items.map((item) => (
-        <button
-          className="group flex min-h-[220px] flex-col overflow-hidden bg-background/92 text-left transition hover:bg-background"
-          key={item.id}
-          onClick={() => onOpen(item.id)}
-          type="button"
-        >
-          <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-            {item.coverImageURL ? (
-              <img
-                alt={item.title}
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                loading="lazy"
-                src={item.coverImageURL}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                <BookImage className="h-9 w-9" />
+        <article className="group relative min-h-[220px] overflow-hidden bg-background/92 transition hover:bg-background" key={item.id}>
+          <button className="flex h-full w-full flex-col text-left" onClick={() => onOpen(item.id)} type="button">
+            <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+              {item.coverImageURL ? (
+                <img
+                  alt={item.title}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                  loading="lazy"
+                  src={item.coverImageURL}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                  <BookImage className="h-9 w-9" />
+                </div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/74 via-black/18 to-transparent px-3 py-3 text-white">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">{item.chapterCount} chapters</div>
+                <div className="mt-1 line-clamp-2 text-base font-black">{item.title}</div>
               </div>
-            )}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/74 via-black/18 to-transparent px-3 py-3 text-white">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">{item.chapterCount} chapters</div>
-              <div className="mt-1 line-clamp-2 text-base font-black">{item.title}</div>
             </div>
-          </div>
-          <div className="flex flex-1 items-center justify-between gap-3 px-3 py-3">
-            <div className="min-w-0">
-              <div className="text-xs text-muted-foreground">{item.pageCount} pages</div>
-              <div className="mt-1 truncate text-[11px] text-muted-foreground">{formatDateTime(item.lastUpdated)}</div>
+            <div className="flex flex-1 items-center gap-3 px-3 py-3 pr-24">
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">{item.pageCount} pages</div>
+                <div className="mt-1 truncate text-[11px] text-muted-foreground">{formatDateTime(item.lastUpdated)}</div>
+              </div>
             </div>
-            <Telescope className="h-4.5 w-4.5 shrink-0 text-primary" />
-          </div>
-        </button>
+          </button>
+
+          <Button
+            className="absolute bottom-3 right-3 z-10 gap-1.5 bg-background/92 shadow-[0_10px_24px_rgba(15,23,42,0.14)]"
+            disabled={!item.sourceURL || resolving}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDownload(item.sourceURL);
+            }}
+            size="sm"
+            title={item.sourceURL ? t("library.download") : t("library.downloadUnavailable")}
+            type="button"
+            variant="outline"
+          >
+            <Download className="h-4 w-4" />
+            {t("library.download")}
+          </Button>
+        </article>
       ))}
     </div>
   );

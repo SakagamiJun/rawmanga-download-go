@@ -82,6 +82,8 @@ export const ja = {
     subtitle: "ローカル保存済みの漫画を表紙で表示し、クリックで全話リーダーを開きます。",
     chapters: "話",
     pages: "ページ",
+    download: "再取得",
+    downloadUnavailable: "元 URL がありません",
     empty: "現在の出力フォルダーにダウンロード済み漫画がありません。",
     back: "ライブラリへ戻る",
   },

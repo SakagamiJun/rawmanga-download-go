@@ -91,6 +91,7 @@ export namespace contracts {
 	export class LibraryManga {
 	    id: string;
 	    title: string;
+	    sourceURL: string;
 	    relativePath: string;
 	    coverImageURL: string;
 	    chapterCount: number;
@@ -105,6 +106,7 @@ export namespace contracts {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.title = source["title"];
+	        this.sourceURL = source["sourceURL"];
 	        this.relativePath = source["relativePath"];
 	        this.coverImageURL = source["coverImageURL"];
 	        this.chapterCount = source["chapterCount"];

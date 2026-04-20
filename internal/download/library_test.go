@@ -31,6 +31,7 @@ func TestListLibraryMangaAndReaderManifest(t *testing.T) {
 	}
 
 	if err := WriteSidecar(SidecarPath(chapterDir), ChapterSidecar{
+		SourceURL:         "https://klz9.com/sample-manga.html",
 		MangaTitle:        "Sample Manga",
 		ChapterID:         "chapter-1",
 		ChapterNumber:     1,
@@ -61,6 +62,9 @@ func TestListLibraryMangaAndReaderManifest(t *testing.T) {
 
 	if library[0].CoverImageURL == "" {
 		t.Fatal("expected cover image url")
+	}
+	if library[0].SourceURL != "https://klz9.com/sample-manga.html" {
+		t.Fatalf("unexpected source url: %q", library[0].SourceURL)
 	}
 
 	manifest, err := GetReaderManifest(root, library[0].ID)

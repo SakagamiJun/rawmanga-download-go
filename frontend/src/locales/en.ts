@@ -82,6 +82,8 @@ export const en = {
     subtitle: "Preview manga from the local download folder and jump straight into the full reader.",
     chapters: "chapters",
     pages: "pages",
+    download: "Download",
+    downloadUnavailable: "Missing source URL",
     empty: "No downloaded manga found in the current output root.",
     back: "Back to Library",
   },

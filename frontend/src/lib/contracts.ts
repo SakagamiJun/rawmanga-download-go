@@ -108,6 +108,7 @@ export interface AppSettings {
 export interface LibraryManga {
   id: string;
   title: string;
+  sourceURL: string;
   relativePath: string;
   coverImageURL: string;
   chapterCount: number;

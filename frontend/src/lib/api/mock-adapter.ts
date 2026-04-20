@@ -93,6 +93,7 @@ const mockReaderManifests: ReaderManifest[] = [
 const mockLibrary: LibraryManga[] = mockReaderManifests.map((manifest, index) => ({
   id: manifest.mangaID,
   title: manifest.title,
+  sourceURL: `https://klz9.com/mock-library-${index + 1}.html`,
   relativePath: manifest.title,
   coverImageURL: manifest.coverImageURL,
   chapterCount: manifest.chapters.length,

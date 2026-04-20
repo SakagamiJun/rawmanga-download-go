@@ -21,6 +21,7 @@ const LibraryAssetPrefix = "/library-files/"
 type mangaManifest struct {
 	relativePath string
 	updatedAt    time.Time
+	sourceURL    string
 	reader       contracts.ReaderManifest
 }
 
@@ -28,6 +29,7 @@ type chapterSource struct {
 	id          string
 	title       string
 	number      float64
+	sourceURL   string
 	completedAt string
 	localPath   string
 	pages       []contracts.ReaderPage
@@ -61,6 +63,7 @@ func ListLibraryManga(outputRoot string) ([]contracts.LibraryManga, error) {
 		item := contracts.LibraryManga{
 			ID:            manifest.reader.MangaID,
 			Title:         manifest.reader.Title,
+			SourceURL:     manifest.sourceURL,
 			RelativePath:  manifest.relativePath,
 			CoverImageURL: manifest.reader.CoverImageURL,
 			ChapterCount:  len(manifest.reader.Chapters),
@@ -181,6 +184,7 @@ func loadMangaManifest(outputRoot string, mangaDir string) (mangaManifest, error
 	var (
 		totalPages int
 		updatedAt  time.Time
+		sourceURL  string
 	)
 
 	for _, chapterEntry := range chapterEntries {
@@ -199,6 +203,9 @@ func loadMangaManifest(outputRoot string, mangaDir string) (mangaManifest, error
 
 		if source.updatedAt.After(updatedAt) {
 			updatedAt = source.updatedAt
+		}
+		if sourceURL == "" && source.sourceURL != "" {
+			sourceURL = source.sourceURL
 		}
 		totalPages += len(source.pages)
 		chapters = append(chapters, source)
@@ -235,6 +242,7 @@ func loadMangaManifest(outputRoot string, mangaDir string) (mangaManifest, error
 	return mangaManifest{
 		relativePath: filepath.ToSlash(relativePath),
 		updatedAt:    updatedAt,
+		sourceURL:    sourceURL,
 		reader: contracts.ReaderManifest{
 			MangaID:       encodeMangaID(relativePath),
 			Title:         filepath.Base(mangaDir),
@@ -329,6 +337,7 @@ func loadChapterSource(outputRoot string, chapterDir string) (chapterSource, err
 		id:          chapterID,
 		title:       title,
 		number:      number,
+		sourceURL:   sidecar.SourceURL,
 		completedAt: completedAt,
 		localPath:   chapterDir,
 		pages:       pages,

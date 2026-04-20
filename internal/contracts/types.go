@@ -140,6 +140,7 @@ type AppSettings struct {
 type LibraryManga struct {
 	ID            string `json:"id"`
 	Title         string `json:"title"`
+	SourceURL     string `json:"sourceURL"`
 	RelativePath  string `json:"relativePath"`
 	CoverImageURL string `json:"coverImageURL"`
 	ChapterCount  int    `json:"chapterCount"`
