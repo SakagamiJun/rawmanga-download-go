@@ -1021,8 +1021,8 @@ function LibraryGrid({
                   <BookImage className="h-9 w-9" />
                 </div>
               )}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/74 via-black/18 to-transparent px-3 py-3 text-white">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">{item.chapterCount} chapters</div>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/74 via-black/18 to-transparent px-3 py-3 text-black drop-shadow-[0_0_10px_rgba(255,255,255,1)]">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black drop-shadow-[0_0_10px_rgba(255,255,255,1)">{item.chapterCount} chapters</div>
                 <div className="mt-1 line-clamp-2 text-base font-black">{item.title}</div>
               </div>
             </div>
