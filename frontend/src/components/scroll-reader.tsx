@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type FlatReaderPage, type PageMetric, type ReaderNavigationRequest, DEFAULT_ASPECT_RATIO, PAGE_GAP, PAGE_PADDING, clampIndex, findPageIndexAtPosition } from "@/components/reader-shared";
 
 interface ScrollReaderProps {
@@ -86,8 +86,21 @@ export function ScrollReader({
   }, [contentHeight, pageLayouts.heights, pageLayouts.offsets, scrollTop]);
 
   useEffect(() => {
+    if (navigationRequest && handledNavigationIDRef.current !== navigationRequest.id) {
+      return;
+    }
+
+    const pendingNavigationIndex = pendingNavigationIndexRef.current;
+    if (pendingNavigationIndex !== null && effectiveIndex !== pendingNavigationIndex) {
+      return;
+    }
+
+    if (pendingNavigationIndex === effectiveIndex) {
+      pendingNavigationIndexRef.current = null;
+    }
+
     onCurrentIndexChange(effectiveIndex);
-  }, [effectiveIndex, onCurrentIndexChange]);
+  }, [effectiveIndex, navigationRequest, onCurrentIndexChange]);
 
   const firstVisibleIndex = useMemo(() => {
     return findPageIndexAtPosition(pageLayouts.offsets, pageLayouts.heights, scrollTop);
@@ -109,7 +122,7 @@ export function ScrollReader({
     }
   }, [pages, renderRange.end, renderRange.start, requestMetric]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!navigationRequest || pages.length === 0) {
       return;
     }
