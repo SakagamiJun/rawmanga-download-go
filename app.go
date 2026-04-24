@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -262,7 +263,7 @@ func (a *App) UpdateReaderProgress(input contracts.ReaderProgress) (contracts.Re
 
 func (a *App) AssetHandler() http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if !strings.HasPrefix(request.URL.Path, download.LibraryAssetPrefix) {
+		if !download.IsLibraryAssetRequest(request.URL.Path) {
 			http.NotFound(writer, request)
 			return
 		}
@@ -272,7 +273,31 @@ func (a *App) AssetHandler() http.Handler {
 			return
 		}
 
-		targetPath, err := download.ResolveLibraryAssetPath(a.settings.Get().OutputRoot, request.URL.Path)
+		outputRoot := a.settings.Get().OutputRoot
+		if strings.HasPrefix(request.URL.Path, download.LibraryArchiveAssetPrefix) {
+			reader, contentType, contentLength, err := download.OpenArchiveAsset(outputRoot, request.URL.Path)
+			if err != nil {
+				if os.IsNotExist(err) {
+					http.NotFound(writer, request)
+					return
+				}
+				http.Error(writer, err.Error(), http.StatusForbidden)
+				return
+			}
+			defer reader.Close()
+
+			if contentType != "" {
+				writer.Header().Set("Content-Type", contentType)
+			}
+			if contentLength >= 0 {
+				writer.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
+			}
+
+			_, _ = io.Copy(writer, reader)
+			return
+		}
+
+		targetPath, err := download.ResolveLibraryAssetPath(outputRoot, request.URL.Path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.NotFound(writer, request)

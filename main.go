@@ -4,13 +4,12 @@ import (
 	"embed"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/sakagamijun/rawmanga-download-go/internal/download"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 //go:embed all:frontend/dist
@@ -31,7 +30,7 @@ func main() {
 			Handler: assetHandler,
 			Middleware: func(next http.Handler) http.Handler {
 				return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-					if strings.HasPrefix(request.URL.Path, download.LibraryAssetPrefix) {
+					if download.IsLibraryAssetRequest(request.URL.Path) {
 						assetHandler.ServeHTTP(writer, request)
 						return
 					}
@@ -47,7 +46,7 @@ func main() {
 				FullscreenEnabled: mac.Enabled,
 			},
 		},
-		OnStartup:        app.startup,
+		OnStartup: app.startup,
 		Bind: []interface{}{
 			app,
 		},

@@ -14,6 +14,7 @@ RawManga Downloader is a lightweight, cross-platform desktop application designe
 - **Integrated Reader**: 
   - **Scroll Mode**: Continuous vertical reading.
   - **Paged Mode**: Traditional side-to-side reading.
+  - Opens local chapter folders and chapter `.zip` / `.cbz` archives directly.
   - Remembers your reading progress for every chapter.
 - **Local Library**: Manage your downloaded manga collection with an embedded SQLite database.
 - **Internationalization**: Full support for English, Simplified Chinese, and Japanese.
