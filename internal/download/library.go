@@ -296,11 +296,11 @@ func loadMangaManifest(outputRoot string, mangaDir string) (mangaManifest, error
 	for _, entry := range chapterEntries {
 		switch {
 		case entry.IsDir():
-			descriptors = append(descriptors, chapterSourceDescriptor{
-				kind: chapterSourceDirectory,
-				path: filepath.Join(mangaDir, entry.Name()),
-				name: entry.Name(),
-			})
+			resolved, err := resolveChapterDescriptors(filepath.Join(mangaDir, entry.Name()))
+			if err != nil {
+				return mangaManifest{}, fmt.Errorf("resolve chapters in %s: %w", entry.Name(), err)
+			}
+			descriptors = append(descriptors, resolved...)
 		case isSupportedArchivePath(entry.Name()):
 			descriptors = append(descriptors, chapterSourceDescriptor{
 				kind: chapterSourceArchive,
@@ -397,6 +397,14 @@ func loadDirectoryChapterSource(outputRoot string, chapterDir string) (chapterSo
 
 	baseName := filepath.Base(chapterDir)
 	metadata := resolveChapterMetadata(baseName, sidecar, sidecarFound)
+	if !sidecarFound || sidecar.ChapterID == "" {
+		if relToRoot, err := filepath.Rel(outputRoot, chapterDir); err == nil {
+			parts := strings.SplitN(relToRoot, string(filepath.Separator), 2)
+			if len(parts) == 2 {
+				metadata.id = parts[1]
+			}
+		}
+	}
 	pages, err := readDirectoryPages(outputRoot, chapterDir, sidecar, sidecarFound, metadata)
 	if err != nil {
 		return chapterSource{}, err
@@ -886,6 +894,68 @@ func naturalLess(left string, right string) bool {
 	}
 
 	return left < right
+}
+
+func resolveChapterDescriptors(dirPath string) ([]chapterSourceDescriptor, error) {
+	hasImages, err := dirHasImages(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	if hasImages {
+		return []chapterSourceDescriptor{{
+			kind: chapterSourceDirectory,
+			path: dirPath,
+			name: filepath.Base(dirPath),
+		}}, nil
+	}
+
+	// Preserve sidecar-bearing directories as chapters even when
+	// images live in child folders (sidecar Files entries reference
+	// relative paths like "pages/001.jpg").
+	if _, err := os.Stat(SidecarPath(dirPath)); err == nil {
+		return []chapterSourceDescriptor{{
+			kind: chapterSourceDirectory,
+			path: dirPath,
+			name: filepath.Base(dirPath),
+		}}, nil
+	}
+
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	var descriptors []chapterSourceDescriptor
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		subDir := filepath.Join(dirPath, entry.Name())
+		ok, err := dirHasImages(subDir)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			descriptors = append(descriptors, chapterSourceDescriptor{
+				kind: chapterSourceDirectory,
+				path: subDir,
+				name: entry.Name(),
+			})
+		}
+	}
+	return descriptors, nil
+}
+
+func dirHasImages(dir string) (bool, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return false, err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() && isSupportedImagePath(entry.Name()) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func isASCIIDigit(value byte) bool {

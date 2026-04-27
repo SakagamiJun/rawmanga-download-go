@@ -311,6 +311,233 @@ func TestOpenArchiveAssetValidatesRequests(t *testing.T) {
 	}
 }
 
+func TestListLibraryMangaNestedChapterDirectories(t *testing.T) {
+	root := t.TempDir()
+	mangaDir := filepath.Join(root, "Nested Manga")
+	chapterDir := filepath.Join(mangaDir, "默认", "1")
+
+	if err := os.MkdirAll(chapterDir, 0o755); err != nil {
+		t.Fatalf("mkdir nested chapter dir: %v", err)
+	}
+
+	writeFile(t, filepath.Join(chapterDir, "001.jpg"), "one")
+	writeFile(t, filepath.Join(chapterDir, "002.jpg"), "two")
+
+	library, err := ListLibraryManga(root)
+	if err != nil {
+		t.Fatalf("ListLibraryManga returned error: %v", err)
+	}
+
+	if len(library) != 1 {
+		t.Fatalf("unexpected library size: %d", len(library))
+	}
+
+	item := library[0]
+	if item.Title != "Nested Manga" {
+		t.Fatalf("unexpected title: %q", item.Title)
+	}
+	if item.PageCount != 2 {
+		t.Fatalf("unexpected page count: %d", item.PageCount)
+	}
+	if item.ChapterCount != 1 {
+		t.Fatalf("unexpected chapter count: %d", item.ChapterCount)
+	}
+
+	manifest, err := GetReaderManifest(root, item.ID)
+	if err != nil {
+		t.Fatalf("GetReaderManifest returned error: %v", err)
+	}
+
+	if manifest.TotalPages != 2 {
+		t.Fatalf("unexpected total pages: %d", manifest.TotalPages)
+	}
+	if len(manifest.Chapters) != 1 {
+		t.Fatalf("unexpected chapter count in manifest: %d", len(manifest.Chapters))
+	}
+	if manifest.Chapters[0].Title != "1" {
+		t.Fatalf("unexpected chapter title: %q", manifest.Chapters[0].Title)
+	}
+	if manifest.Chapters[0].Number != 1 {
+		t.Fatalf("unexpected chapter number: %f", manifest.Chapters[0].Number)
+	}
+}
+
+func TestListLibraryMangaNestedChaptersHaveUniqueIDs(t *testing.T) {
+	root := t.TempDir()
+	mangaDir := filepath.Join(root, "Multi Volume Manga")
+
+	// Two grouping folders, each containing a chapter named "001"
+	chapter1Dir := filepath.Join(mangaDir, "Vol 1", "001")
+	chapter2Dir := filepath.Join(mangaDir, "Vol 2", "001")
+
+	if err := os.MkdirAll(chapter1Dir, 0o755); err != nil {
+		t.Fatalf("mkdir chapter1 dir: %v", err)
+	}
+	if err := os.MkdirAll(chapter2Dir, 0o755); err != nil {
+		t.Fatalf("mkdir chapter2 dir: %v", err)
+	}
+
+	writeFile(t, filepath.Join(chapter1Dir, "001.jpg"), "page1")
+	writeFile(t, filepath.Join(chapter2Dir, "001.jpg"), "page2")
+
+	library, err := ListLibraryManga(root)
+	if err != nil {
+		t.Fatalf("ListLibraryManga returned error: %v", err)
+	}
+
+	if len(library) != 1 {
+		t.Fatalf("unexpected library size: %d", len(library))
+	}
+
+	manifest, err := GetReaderManifest(root, library[0].ID)
+	if err != nil {
+		t.Fatalf("GetReaderManifest returned error: %v", err)
+	}
+
+	if len(manifest.Chapters) != 2 {
+		t.Fatalf("unexpected chapter count: %d", len(manifest.Chapters))
+	}
+
+	// Both chapters have the same directory name but must have unique IDs
+	if manifest.Chapters[0].ID == manifest.Chapters[1].ID {
+		t.Fatalf("chapters must have unique IDs, got duplicate: %q", manifest.Chapters[0].ID)
+	}
+
+	// Both should resolve the title and number from the inner directory name
+	for _, ch := range manifest.Chapters {
+		if ch.Title != "001" {
+			t.Fatalf("unexpected chapter title: %q", ch.Title)
+		}
+		if ch.Number != 1 {
+			t.Fatalf("unexpected chapter number: %f", ch.Number)
+		}
+	}
+}
+
+func TestListLibraryMangaNestedChaptersUniqueIDsWithSidecarsWithoutChapterID(t *testing.T) {
+	root := t.TempDir()
+	mangaDir := filepath.Join(root, "Sidecar Manga")
+
+	chapter1Dir := filepath.Join(mangaDir, "Vol 1", "001")
+	chapter2Dir := filepath.Join(mangaDir, "Vol 2", "001")
+
+	for _, dir := range []string{chapter1Dir, chapter2Dir} {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatalf("mkdir: %v", err)
+		}
+	}
+
+	writeFile(t, filepath.Join(chapter1Dir, "001.jpg"), "page1")
+	writeFile(t, filepath.Join(chapter2Dir, "001.jpg"), "page2")
+
+	// Write sidecars that do NOT set chapterID (simulating legacy/partial sidecars)
+	for _, dir := range []string{chapter1Dir, chapter2Dir} {
+		if err := WriteSidecar(SidecarPath(dir), ChapterSidecar{
+			MangaTitle:    "Sidecar Manga",
+			ChapterTitle:  "001",
+			ChapterNumber: 1,
+			// ChapterID intentionally left empty
+		}); err != nil {
+			t.Fatalf("write sidecar: %v", err)
+		}
+	}
+
+	library, err := ListLibraryManga(root)
+	if err != nil {
+		t.Fatalf("ListLibraryManga returned error: %v", err)
+	}
+
+	manifest, err := GetReaderManifest(root, library[0].ID)
+	if err != nil {
+		t.Fatalf("GetReaderManifest returned error: %v", err)
+	}
+
+	if len(manifest.Chapters) != 2 {
+		t.Fatalf("unexpected chapter count: %d", len(manifest.Chapters))
+	}
+
+	if manifest.Chapters[0].ID == manifest.Chapters[1].ID {
+		t.Fatalf("chapters must have unique IDs even with sidecars lacking chapterID, got duplicate: %q", manifest.Chapters[0].ID)
+	}
+}
+
+func TestListLibraryMangaSidecarChapterWithNestedImages(t *testing.T) {
+	root := t.TempDir()
+	mangaDir := filepath.Join(root, "Sidecar Manga")
+	chapterDir := filepath.Join(mangaDir, "001 - Chapter")
+	pagesDir := filepath.Join(chapterDir, "pages")
+
+	if err := os.MkdirAll(pagesDir, 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+
+	// Images live in a child folder, not directly in the chapter directory
+	writeFile(t, filepath.Join(pagesDir, "001.jpg"), "first")
+	writeFile(t, filepath.Join(pagesDir, "002.jpg"), "second")
+
+	// Sidecar references images via relative paths from the chapter dir
+	if err := WriteSidecar(SidecarPath(chapterDir), ChapterSidecar{
+		SourceURL:         "https://example.com/manga",
+		MangaTitle:        "Sidecar Manga",
+		ChapterID:         "ch-sidecar-001",
+		ChapterNumber:     1,
+		ChapterTitle:      "Chapter With Sidecar",
+		ExpectedPageCount: 2,
+		DownloadedPages:   2,
+		Files: []ChapterSidecarFile{
+			{PageIndex: 0, FileName: "pages/001.jpg"},
+			{PageIndex: 1, FileName: "pages/002.jpg"},
+		},
+		CompletedAt: "2026-04-25T00:00:00Z",
+	}); err != nil {
+		t.Fatalf("write sidecar: %v", err)
+	}
+
+	library, err := ListLibraryManga(root)
+	if err != nil {
+		t.Fatalf("ListLibraryManga returned error: %v", err)
+	}
+
+	if len(library) != 1 {
+		t.Fatalf("unexpected library size: %d", len(library))
+	}
+
+	manifest, err := GetReaderManifest(root, library[0].ID)
+	if err != nil {
+		t.Fatalf("GetReaderManifest returned error: %v", err)
+	}
+
+	if len(manifest.Chapters) != 1 {
+		t.Fatalf("unexpected chapter count: %d (chapter should not have been fragmented into child directories)", len(manifest.Chapters))
+	}
+
+	chapter := manifest.Chapters[0]
+
+	// Must use sidecar metadata, not "pages" (the child directory name)
+	if chapter.ID != "ch-sidecar-001" {
+		t.Fatalf("unexpected chapter id: %q (expected sidecar chapterID)", chapter.ID)
+	}
+	if chapter.Title != "Chapter With Sidecar" {
+		t.Fatalf("unexpected chapter title: %q (expected sidecar title)", chapter.Title)
+	}
+	if chapter.Number != 1 {
+		t.Fatalf("unexpected chapter number: %f", chapter.Number)
+	}
+	if chapter.PageCount != 2 {
+		t.Fatalf("unexpected page count: %d", chapter.PageCount)
+	}
+
+	// Pages must be served from the filesystem (under chapters parent)
+	if len(chapter.Pages) != 2 {
+		t.Fatalf("unexpected pages count: %d", len(chapter.Pages))
+	}
+	for _, p := range chapter.Pages {
+		if !strings.HasPrefix(p.SourceURL, LibraryAssetPrefix) {
+			t.Fatalf("expected filesystem asset URL, got %q", p.SourceURL)
+		}
+	}
+}
+
 func writeFile(t *testing.T, filePath string, content string) {
 	t.Helper()
 
