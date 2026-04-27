@@ -26,6 +26,14 @@ interface ReaderControllerProps {
   settings: Pick<AppSettings, "autoRestoreReaderProgress" | "readerScrollCachePages">;
 }
 
+function resolveJumpTargetIndex(jumpRequest: ReaderJumpRequest, pages: FlatReaderPage[]) {
+  if (jumpRequest.target === "chapter") {
+    return pages.findIndex((page) => page.chapterID === jumpRequest.chapterID);
+  }
+
+  return clampIndex(jumpRequest.page - 1, pages.length);
+}
+
 export function ReaderController({ jumpRequest = null, manifest, mode, settings }: ReaderControllerProps) {
   const handledJumpRequestIDRef = useRef<number | null>(null);
   const lastSavedPageRef = useRef<number | null>(null);
@@ -180,18 +188,15 @@ export function ReaderController({ jumpRequest = null, manifest, mode, settings 
 
     handledJumpRequestIDRef.current = jumpRequest.requestID;
 
-    const targetIndex =
-      jumpRequest.target === "chapter"
-        ? pages.findIndex((page) => page.chapterID === jumpRequest.chapterID)
-        : clampIndex(jumpRequest.page - 1, pages.length);
+    const targetIndex = resolveJumpTargetIndex(jumpRequest, pages);
 
     if (targetIndex < 0) {
       return;
     }
 
     setCurrentIndex(targetIndex);
-    setNavigationRequest(nextNavigationRequest(targetIndex, "jump"));
-  }, [jumpRequest, pages]);
+    setNavigationRequest(nextNavigationRequest(targetIndex, mode === "scroll" ? "sync" : "jump"));
+  }, [jumpRequest, mode, pages]);
 
   useEffect(() => {
     const start = Math.max(0, currentIndex - cacheRadius);

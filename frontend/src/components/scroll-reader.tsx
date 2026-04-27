@@ -25,6 +25,7 @@ export function ScrollReader({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const handledNavigationIDRef = useRef<number | null>(null);
+  const navigationAnchorRef = useRef<{ id: number; index: number; offset: number } | null>(null);
   const pendingNavigationIndexRef = useRef<number | null>(null);
 
   const [viewportWidth, setViewportWidth] = useState(0);
@@ -50,6 +51,7 @@ export function ScrollReader({
 
   useEffect(() => {
     handledNavigationIDRef.current = null;
+    navigationAnchorRef.current = null;
     pendingNavigationIndexRef.current = null;
     setScrollTop(0);
     if (scrollRef.current) {
@@ -102,6 +104,17 @@ export function ScrollReader({
     onCurrentIndexChange(effectiveIndex);
   }, [effectiveIndex, navigationRequest, onCurrentIndexChange]);
 
+  useEffect(() => {
+    const anchor = navigationAnchorRef.current;
+    if (!anchor || pendingNavigationIndexRef.current !== null) {
+      return;
+    }
+
+    if (effectiveIndex !== anchor.index) {
+      navigationAnchorRef.current = null;
+    }
+  }, [effectiveIndex]);
+
   const firstVisibleIndex = useMemo(() => {
     return findPageIndexAtPosition(pageLayouts.offsets, pageLayouts.heights, scrollTop);
   }, [pageLayouts.heights, pageLayouts.offsets, scrollTop]);
@@ -128,34 +141,55 @@ export function ScrollReader({
     }
 
     const targetIndex = clampIndex(navigationRequest.index, pages.length);
-    const hasPendingRetry =
-      handledNavigationIDRef.current === navigationRequest.id && pendingNavigationIndexRef.current === targetIndex;
-    if (!hasPendingRetry && handledNavigationIDRef.current === navigationRequest.id) {
+    if (handledNavigationIDRef.current === navigationRequest.id) {
       return;
     }
 
     handledNavigationIDRef.current = navigationRequest.id;
+    pendingNavigationIndexRef.current = targetIndex;
 
-    for (let index = 0; index <= targetIndex; index += 1) {
+    const metricStart = Math.max(0, targetIndex - cacheRadius);
+    const metricEnd = Math.min(pages.length - 1, targetIndex + cacheRadius);
+    for (let index = metricStart; index <= metricEnd; index += 1) {
       requestMetric(pages[index]);
     }
 
-    const hasAccurateOffsets = pages.slice(0, targetIndex + 1).every((page) => Boolean(metrics[page.id]));
-    if (!hasAccurateOffsets) {
-      pendingNavigationIndexRef.current = targetIndex;
-      return;
-    }
-
-    pendingNavigationIndexRef.current = null;
-
     const nextScrollTop = pageLayouts.offsets[targetIndex] ?? 0;
+    navigationAnchorRef.current = {
+      id: navigationRequest.id,
+      index: targetIndex,
+      offset: nextScrollTop,
+    };
     setScrollTop(nextScrollTop);
     scrollRef.current?.scrollTo({
       top: nextScrollTop,
-      behavior: navigationRequest.reason === "jump" ? "smooth" : "auto",
+      behavior: "auto",
     });
     scrollRef.current?.focus();
-  }, [metrics, navigationRequest, pageLayouts.offsets, pages, requestMetric]);
+  }, [cacheRadius, navigationRequest, pageLayouts.offsets, pages, requestMetric]);
+
+  useLayoutEffect(() => {
+    const anchor = navigationAnchorRef.current;
+    if (!anchor || pages.length === 0) {
+      return;
+    }
+
+    const nextOffset = pageLayouts.offsets[anchor.index] ?? 0;
+    const delta = nextOffset - anchor.offset;
+    if (Math.abs(delta) <= 1) {
+      return;
+    }
+
+    navigationAnchorRef.current = {
+      ...anchor,
+      offset: nextOffset,
+    };
+    setScrollTop((current) => current + delta);
+    scrollRef.current?.scrollBy({
+      top: delta,
+      behavior: "auto",
+    });
+  }, [pageLayouts.offsets, pages.length]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!scrollRef.current) {
