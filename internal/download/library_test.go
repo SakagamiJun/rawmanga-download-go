@@ -221,6 +221,46 @@ func TestGetReaderManifestArchiveFallbackUsesNaturalOrder(t *testing.T) {
 	}
 }
 
+func TestGetReaderManifestSortsChaptersByInferredNumericTokens(t *testing.T) {
+	root := t.TempDir()
+	mangaDir := filepath.Join(root, "Long Manga")
+
+	chapterNames := []string{
+		"1 第1话",
+		"10 第10话",
+		"100 第100话",
+		"101 第101话",
+		"2 第2话",
+		"第11话",
+	}
+	for _, chapterName := range chapterNames {
+		writeFile(t, filepath.Join(mangaDir, chapterName, "001.jpg"), chapterName)
+	}
+
+	manifest, err := GetReaderManifest(root, encodeMangaID("Long Manga"))
+	if err != nil {
+		t.Fatalf("GetReaderManifest returned error: %v", err)
+	}
+
+	got := make([]string, 0, len(manifest.Chapters))
+	gotNumbers := make([]float64, 0, len(manifest.Chapters))
+	for _, chapter := range manifest.Chapters {
+		got = append(got, chapter.Title)
+		gotNumbers = append(gotNumbers, chapter.Number)
+	}
+
+	want := []string{"1 第1话", "2 第2话", "10 第10话", "第11话", "100 第100话", "101 第101话"}
+	wantNumbers := []float64{1, 2, 10, 11, 100, 101}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("unexpected chapter order: got %v want %v", got, want)
+		}
+		if gotNumbers[index] != wantNumbers[index] {
+			t.Fatalf("unexpected chapter numbers: got %v want %v", gotNumbers, wantNumbers)
+		}
+	}
+}
+
 func TestGetReaderManifestArchiveIgnoresUnsupportedAndMetadataEntries(t *testing.T) {
 	root := t.TempDir()
 	mangaDir := filepath.Join(root, "Filtered Manga")

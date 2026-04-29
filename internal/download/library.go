@@ -337,10 +337,7 @@ func loadMangaManifest(outputRoot string, mangaDir string) (mangaManifest, error
 	}
 
 	sort.SliceStable(chapters, func(i, j int) bool {
-		if chapters[i].number == chapters[j].number {
-			return chapters[i].title < chapters[j].title
-		}
-		return chapters[i].number < chapters[j].number
+		return chapterLess(chapters[i], chapters[j])
 	})
 
 	readerChapters := make([]contracts.ReaderChapter, 0, len(chapters))
@@ -483,7 +480,7 @@ func readDirectoryPages(outputRoot string, chapterDir string, sidecar ChapterSid
 	}
 
 	sort.SliceStable(entries, func(i, j int) bool {
-		return entries[i].Name() < entries[j].Name()
+		return naturalLess(entries[i].Name(), entries[j].Name())
 	})
 	for index, entry := range entries {
 		if entry.IsDir() {
@@ -579,7 +576,11 @@ func resolveChapterMetadata(baseName string, sidecar ChapterSidecar, sidecarFoun
 		return metadata
 	}
 
-	metadata.number = sidecar.ChapterNumber
+	if sidecar.ChapterNumber != 0 {
+		metadata.number = sidecar.ChapterNumber
+	} else if metadata.number == 0 && sidecar.ChapterTitle != "" {
+		metadata.number = inferChapterNumber(sidecar.ChapterTitle)
+	}
 	if sidecar.ChapterTitle != "" {
 		metadata.title = sidecar.ChapterTitle
 	}
@@ -829,11 +830,46 @@ func inferChapterNumber(chapterDirName string) float64 {
 		label = label[:dashIndex]
 	}
 	label = strings.ReplaceAll(label, "_", ".")
-	value, err := strconv.ParseFloat(label, 64)
-	if err != nil {
-		return 0
+
+	for index := 0; index < len(label); index += 1 {
+		if !isASCIIDigit(label[index]) {
+			continue
+		}
+
+		end := index + 1
+		for end < len(label) && isASCIIDigit(label[end]) {
+			end++
+		}
+		if end < len(label) && label[end] == '.' {
+			decimalEnd := end + 1
+			for decimalEnd < len(label) && isASCIIDigit(label[decimalEnd]) {
+				decimalEnd++
+			}
+			if decimalEnd > end+1 {
+				end = decimalEnd
+			}
+		}
+
+		value, err := strconv.ParseFloat(label[index:end], 64)
+		if err == nil {
+			return value
+		}
 	}
-	return value
+
+	return 0
+}
+
+func chapterLess(left chapterSource, right chapterSource) bool {
+	if left.number != right.number {
+		return left.number < right.number
+	}
+	if left.title != right.title {
+		return naturalLess(left.title, right.title)
+	}
+	if left.id != right.id {
+		return naturalLess(left.id, right.id)
+	}
+	return naturalLess(left.localPath, right.localPath)
 }
 
 func naturalLess(left string, right string) bool {
