@@ -10,17 +10,19 @@ import (
 )
 
 func TestExtractBundleFromHTML(t *testing.T) {
-	htmlContent, err := os.ReadFile(filepath.Join("..", "..", "otona-ni-narenai-bokura-wa.html"))
-	if err != nil {
-		t.Fatalf("read html fixture: %v", err)
-	}
+	htmlContent := `<!doctype html>
+<html>
+<head>
+  <script type="module" crossorigin src="/assets/index-BBvPdTHw.js.pagespeed.ce.WKBIIa11t7.js"></script>
+</head>
+</html>`
 
 	pageURL, err := url.Parse("https://klz9.com/otona-ni-narenai-bokura-wa.html")
 	if err != nil {
 		t.Fatalf("parse page url: %v", err)
 	}
 
-	bundleURL, bundleHash, err := extractBundleFromHTML(pageURL, string(htmlContent))
+	bundleURL, bundleHash, err := extractBundleFromHTML(pageURL, htmlContent)
 	if err != nil {
 		t.Fatalf("extract bundle: %v", err)
 	}
