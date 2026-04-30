@@ -21,6 +21,6 @@ declare const _default: {
             };
         };
     };
-    plugins: any[];
+    plugins: never[];
 };
 export default _default;
