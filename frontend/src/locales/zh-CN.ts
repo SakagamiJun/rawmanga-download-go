@@ -1,8 +1,6 @@
 export const zhCN = {
   app: {
     title: "KLZ9 下载器",
-    mock: "模拟适配器",
-    live: "Wails 适配器",
   },
   shell: {
     tasks: "任务",
@@ -80,7 +78,6 @@ export const zhCN = {
     title: "漫画库",
     heading: "已下载漫画",
     subtitle: "从本地下载目录展示漫画封面，点击即可进入整本阅读。",
-    chapters: "话",
     pages: "页",
     download: "下载",
     downloadUnavailable: "缺少源链接",

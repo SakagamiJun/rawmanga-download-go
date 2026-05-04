@@ -13,12 +13,13 @@ const colorMap: Record<string, string> = {
   queued: "bg-muted text-muted-foreground",
 };
 
-export function Badge({ children, tone = "default" }: PropsWithChildren<{ tone?: string }>) {
+export function Badge({ children, className, tone = "default" }: PropsWithChildren<{ className?: string; tone?: string }>) {
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
-        colorMap[tone] ?? "bg-primary/10 text-primary"
+        colorMap[tone] ?? "bg-primary/10 text-primary",
+        className
       )}
     >
       {children}

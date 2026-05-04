@@ -23,6 +23,7 @@ interface ReaderControllerProps {
   jumpRequest?: ReaderJumpRequest | null;
   manifest: ReaderManifest;
   mode: ReaderMode;
+  onChapterChange?: (chapterID: string, chapterTitle: string) => void;
   settings: Pick<AppSettings, "autoRestoreReaderProgress" | "readerScrollCachePages">;
 }
 
@@ -34,7 +35,7 @@ function resolveJumpTargetIndex(jumpRequest: ReaderJumpRequest, pages: FlatReade
   return clampIndex(jumpRequest.page - 1, pages.length);
 }
 
-export function ReaderController({ jumpRequest = null, manifest, mode, settings }: ReaderControllerProps) {
+export function ReaderController({ jumpRequest = null, manifest, mode, onChapterChange, settings }: ReaderControllerProps) {
   const handledJumpRequestIDRef = useRef<number | null>(null);
   const lastSavedPageRef = useRef<number | null>(null);
   const metricRequestGenerationRef = useRef(0);
@@ -206,6 +207,19 @@ export function ReaderController({ jumpRequest = null, manifest, mode, settings 
       requestMetric(pages[index]);
     }
   }, [cacheRadius, currentIndex, pages, requestMetric]);
+
+  const onChapterChangeRef = useRef(onChapterChange);
+  useEffect(() => {
+    onChapterChangeRef.current = onChapterChange;
+  }, [onChapterChange]);
+
+  useEffect(() => {
+    if (pages.length === 0) return;
+    const activePage = pages[clampIndex(currentIndex, pages.length)];
+    if (activePage) {
+      onChapterChangeRef.current?.(activePage.chapterID, activePage.chapterTitle);
+    }
+  }, [currentIndex, pages]);
 
   useEffect(() => {
     if (!restoreReady || pages.length === 0) {

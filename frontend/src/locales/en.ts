@@ -1,8 +1,6 @@
 export const en = {
   app: {
     title: "KLZ9 Downloader",
-    mock: "Mock Adapter",
-    live: "Wails Adapter",
   },
   shell: {
     tasks: "Tasks",
@@ -80,7 +78,6 @@ export const en = {
     title: "Library",
     heading: "Downloaded Manga",
     subtitle: "Preview manga from the local download folder and jump straight into the full reader.",
-    chapters: "chapters",
     pages: "pages",
     download: "Download",
     downloadUnavailable: "Missing source URL",
