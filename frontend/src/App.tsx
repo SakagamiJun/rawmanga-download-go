@@ -93,6 +93,7 @@ export default function App() {
   const [readerJumpChapterID, setReaderJumpChapterID] = useState("");
   const [readerJumpPageInput, setReaderJumpPageInput] = useState("");
   const [readerJumpRequest, setReaderJumpRequest] = useState<ReaderJumpRequest | null>(null);
+  const [readerChapterTitle, setReaderChapterTitle] = useState<string | null>(null);
 
   const readerJumpPanelRef = useRef<HTMLDivElement | null>(null);
 
@@ -128,6 +129,10 @@ export default function App() {
       seedJobs(jobsQuery.data);
     }
   }, [jobsQuery.data, seedJobs]);
+
+  useEffect(() => {
+    setReaderChapterTitle(null);
+  }, [selectedLibraryID]);
 
   useEffect(() => {
     const offJob = appAdapter.subscribe(EVENTS.DOWNLOAD_JOB, (payload) => {
@@ -485,13 +490,11 @@ export default function App() {
             <div className="app-window-drag-region absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 px-4 py-2">
               <div className={cn("flex max-w-[min(58vw,32rem)] items-center gap-2 px-3 py-1.5 text-xs font-semibold", floatingSurfaceClass)}>
                 <span className="truncate">{selectedLibrary ? selectedLibrary.title : t("library.heading")}</span>
-                <Badge tone={selectedLibrary ? "running" : appAdapter.mode === "mock" ? "queued" : "completed"}>
-                  {selectedLibrary
-                    ? `${selectedLibrary.chapterCount} ${t("library.chapters")}`
-                    : appAdapter.mode === "mock"
-                      ? t("app.mock")
-                      : t("app.live")}
-                </Badge>
+                {selectedLibrary && readerChapterTitle && (
+                  <Badge tone="running" className="max-w-[200px] truncate">
+                    {readerChapterTitle}
+                  </Badge>
+                )}
               </div>
 
               {selectedLibraryID ? (
@@ -636,7 +639,13 @@ export default function App() {
                   Failed to open this manga reader.
                 </div>
               ) : selectedLibraryID && readerQuery.data && settings ? (
-                <ReaderController jumpRequest={readerJumpRequest} manifest={readerQuery.data} mode={readerMode} settings={settings} />
+                <ReaderController
+                  jumpRequest={readerJumpRequest}
+                  manifest={readerQuery.data}
+                  mode={readerMode}
+                  settings={settings}
+                  onChapterChange={(_, title) => setReaderChapterTitle(title)}
+                />
               ) : selectedLibraryID && readerQuery.data ? (
                 <div className="flex h-full items-center justify-center border-l border-border/40 bg-card/14 text-sm text-muted-foreground">
                   Loading reader settings…
@@ -669,9 +678,6 @@ export default function App() {
                           {paneMode === "tasks" ? t("shell.processing") : t("settings.title")}
                         </h1>
                       </div>
-                      <Badge tone={appAdapter.mode === "mock" ? "queued" : "running"}>
-                        {appAdapter.mode === "mock" ? t("app.mock") : t("app.live")}
-                      </Badge>
                     </div>
                   </div>
 

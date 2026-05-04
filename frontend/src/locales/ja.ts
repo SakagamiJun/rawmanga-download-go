@@ -1,8 +1,6 @@
 export const ja = {
   app: {
     title: "KLZ9 ダウンローダー",
-    mock: "モックアダプター",
-    live: "Wails アダプター",
   },
   shell: {
     tasks: "タスク",
@@ -80,7 +78,6 @@ export const ja = {
     title: "ライブラリ",
     heading: "ダウンロード済み漫画",
     subtitle: "ローカル保存済みの漫画を表紙で表示し、クリックで全話リーダーを開きます。",
-    chapters: "話",
     pages: "ページ",
     download: "再取得",
     downloadUnavailable: "元 URL がありません",
