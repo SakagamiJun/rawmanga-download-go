@@ -2,6 +2,12 @@
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "klz9-downloader",
   "outputfilename": "klz9-downloader",
+  "info": {
+    "version": "0.1.0",
+    "productName": "KLZ9 Downloader",
+    "copyright": "Copyright © 2026 (MIT License)",
+    "comments": "Built using Wails"
+  },
   "frontend:dir": "frontend",
   "frontend:install": "pnpm install",
   "frontend:build": "pnpm build",
@@ -9,4 +15,3 @@
   "frontend:dev:serverUrl": "auto",
   "assetdir": "frontend/dist"
 }
-
