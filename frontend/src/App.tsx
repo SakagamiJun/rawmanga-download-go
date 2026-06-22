@@ -624,16 +624,6 @@ export default function App() {
                     </div>
                     <Button
                       className={cn("gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]", floatingSurfaceClass)}
-                      onClick={() => setReaderMenuCollapsed(true)}
-                      size="sm"
-                      variant="outline"
-                      title={t("reader.collapseMenu")}
-                    >
-                      <EyeOff className="h-4 w-4" />
-                      {t("reader.collapseMenu")}
-                    </Button>
-                    <Button
-                      className={cn("gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]", floatingSurfaceClass)}
                       onClick={() => {
                         setReaderJumpMenuOpen(false);
                         setReaderMenuCollapsed(false);
@@ -644,6 +634,16 @@ export default function App() {
                     >
                       <ArrowLeft className="h-4 w-4" />
                       {t("library.back")}
+                    </Button>
+                    <Button
+                      className={cn("gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]", floatingSurfaceClass)}
+                      onClick={() => setReaderMenuCollapsed(true)}
+                      size="sm"
+                      variant="outline"
+                      title={t("reader.collapseMenu")}
+                    >
+                      <EyeOff className="h-4 w-4" />
+                      {t("reader.collapseMenu")}
                     </Button>
                   </div>
                 ) : null}
