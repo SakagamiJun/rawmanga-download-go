@@ -15,6 +15,8 @@ import {
   Sparkles,
   SunMedium,
   Telescope,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { ReaderController, type ReaderJumpRequest } from "@/components/reader-controller";
 import { Badge } from "@/components/ui/badge";
@@ -88,12 +90,13 @@ export default function App() {
   const [paneVisible, setPaneVisible] = useState(false);
   const [paneWidth, setPaneWidth] = useState(380);
   const [selectedLibraryID, setSelectedLibraryID] = useState<string | null>(null);
-  const [readerMode, setReaderMode] = useState<ReaderMode>("scroll");
+  const [readerMode, setReaderMode] = useState<ReaderMode>("paged");
   const [readerJumpMenuOpen, setReaderJumpMenuOpen] = useState(false);
   const [readerJumpChapterID, setReaderJumpChapterID] = useState("");
   const [readerJumpPageInput, setReaderJumpPageInput] = useState("");
   const [readerJumpRequest, setReaderJumpRequest] = useState<ReaderJumpRequest | null>(null);
   const [readerChapterTitle, setReaderChapterTitle] = useState<string | null>(null);
+  const [readerMenuCollapsed, setReaderMenuCollapsed] = useState(false);
 
   const readerJumpPanelRef = useRef<HTMLDivElement | null>(null);
 
@@ -487,147 +490,176 @@ export default function App() {
 
         <div className="relative min-w-0 flex-1">
           <section className="relative h-full overflow-hidden bg-card/20 ">
-            <div className="app-window-drag-region absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 px-4 py-2">
-              <div className={cn("flex max-w-[min(58vw,32rem)] items-center gap-2 px-3 py-1.5 text-xs font-semibold", floatingSurfaceClass)}>
-                <span className="truncate">{selectedLibrary ? selectedLibrary.title : t("library.heading")}</span>
-                {selectedLibrary && readerChapterTitle && (
-                  <Badge tone="running" className="max-w-[200px] truncate">
-                    {readerChapterTitle}
-                  </Badge>
-                )}
-              </div>
+            {!(selectedLibraryID && readerMenuCollapsed) && (
+              <div className="app-window-drag-region absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 px-4 py-2">
+                <div className={cn("flex max-w-[min(58vw,32rem)] items-center gap-2 px-3 py-1.5 text-xs font-semibold", floatingSurfaceClass)}>
+                  <span className="truncate">{selectedLibrary ? selectedLibrary.title : t("library.heading")}</span>
+                  {selectedLibrary && readerChapterTitle && (
+                    <Badge tone="running" className="max-w-[200px] truncate">
+                      {readerChapterTitle}
+                    </Badge>
+                  )}
+                </div>
 
-              {selectedLibraryID ? (
-                <div className="app-window-no-drag flex flex-wrap items-center justify-end gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className={cn(
-                      "gap-2 px-3",
-                      floatingSurfaceClass,
-                      readerMode === "scroll"
-                        ? "border-slate-400/70 bg-[rgba(230,236,242,0.96)] text-slate-900"
-                        : "text-slate-700 hover:bg-[rgba(236,241,246,0.92)]"
-                    )}
-                    onClick={() => setReaderMode("scroll")}
-                  >
-                    {t("reader.scrollMode")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className={cn(
-                      "gap-2 px-3",
-                      floatingSurfaceClass,
-                      readerMode === "paged"
-                        ? "border-slate-400/70 bg-[rgba(230,236,242,0.96)] text-slate-900"
-                        : "text-slate-700 hover:bg-[rgba(236,241,246,0.92)]"
-                    )}
-                    onClick={() => setReaderMode("paged")}
-                  >
-                    {t("reader.pagedMode")}
-                  </Button>
-                  <div className="relative" ref={readerJumpPanelRef}>
+                {selectedLibraryID ? (
+                  <div className="app-window-no-drag flex flex-wrap items-center justify-end gap-2">
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       className={cn(
-                        "gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]",
+                        "gap-2 px-3",
                         floatingSurfaceClass,
-                        readerJumpMenuOpen ? "border-slate-400/70 bg-[rgba(230,236,242,0.96)] text-slate-900" : null
+                        readerMode === "scroll"
+                          ? "border-slate-400/70 bg-[rgba(230,236,242,0.96)] text-slate-900"
+                          : "text-slate-700 hover:bg-[rgba(236,241,246,0.92)]"
                       )}
-                      disabled={!readerManifest}
-                      onClick={() => setReaderJumpMenuOpen((current) => !current)}
+                      onClick={() => setReaderMode("scroll")}
                     >
-                      <Telescope className="h-4 w-4" />
-                      {t("reader.jump")}
+                      {t("reader.scrollMode")}
                     </Button>
-
-                    {readerJumpMenuOpen && readerManifest ? (
-                      <div
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className={cn(
+                        "gap-2 px-3",
+                        floatingSurfaceClass,
+                        readerMode === "paged"
+                          ? "border-slate-400/70 bg-[rgba(230,236,242,0.96)] text-slate-900"
+                          : "text-slate-700 hover:bg-[rgba(236,241,246,0.92)]"
+                      )}
+                      onClick={() => setReaderMode("paged")}
+                    >
+                      {t("reader.pagedMode")}
+                    </Button>
+                    <div className="relative" ref={readerJumpPanelRef}>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
                         className={cn(
-                          "absolute right-0 top-full z-20 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-2xl p-3 text-left",
-                          floatingSurfaceClass
+                          "gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]",
+                          floatingSurfaceClass,
+                          readerJumpMenuOpen ? "border-slate-400/70 bg-[rgba(230,236,242,0.96)] text-slate-900" : null
                         )}
+                        disabled={!readerManifest}
+                        onClick={() => setReaderJumpMenuOpen((current) => !current)}
                       >
-                        <div className="space-y-3">
-                          <div className="border-b border-slate-200/80 pb-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{t("reader.jumpTitle")}</p>
-                            <p className="mt-1 text-xs text-slate-600">{t("reader.jumpRange", { total: readerManifest.totalPages })}</p>
-                          </div>
+                        <Telescope className="h-4 w-4" />
+                        {t("reader.jump")}
+                      </Button>
 
-                          <form
-                            className="space-y-2"
-                            onSubmit={(event) => {
-                              event.preventDefault();
-                              submitReaderChapterJump();
-                            }}
-                          >
-                            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                              {t("reader.jumpChapterLabel")}
-                            </label>
-                            <Select
-                              className="h-10 rounded-xl border-slate-300/80 bg-white/88 text-sm text-slate-900"
-                              onChange={(event) => setReaderJumpChapterID(event.target.value)}
-                              value={readerJumpChapterID}
+                      {readerJumpMenuOpen && readerManifest ? (
+                        <div
+                          className={cn(
+                            "absolute right-0 top-full z-20 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-2xl p-3 text-left",
+                            floatingSurfaceClass
+                          )}
+                        >
+                          <div className="space-y-3">
+                            <div className="border-b border-slate-200/80 pb-2">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{t("reader.jumpTitle")}</p>
+                              <p className="mt-1 text-xs text-slate-600">{t("reader.jumpRange", { total: readerManifest.totalPages })}</p>
+                            </div>
+
+                            <form
+                              className="space-y-2"
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                submitReaderChapterJump();
+                              }}
                             >
-                              {readerManifest.chapters.map((chapter) => (
-                                <option key={chapter.id} value={chapter.id}>
-                                  {chapter.number > 0 ? `${chapter.number} · ${chapter.title}` : chapter.title}
-                                </option>
-                              ))}
-                            </Select>
-                            <Button className="w-full" size="sm" type="submit" variant="outline">
-                              {t("reader.jumpChapterAction")}
-                            </Button>
-                          </form>
+                              <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                {t("reader.jumpChapterLabel")}
+                              </label>
+                              <Select
+                                className="h-10 rounded-xl border-slate-300/80 bg-white/88 text-sm text-slate-900"
+                                onChange={(event) => setReaderJumpChapterID(event.target.value)}
+                                value={readerJumpChapterID}
+                              >
+                                {readerManifest.chapters.map((chapter) => (
+                                  <option key={chapter.id} value={chapter.id}>
+                                    {chapter.number > 0 ? `${chapter.number} · ${chapter.title}` : chapter.title}
+                                  </option>
+                                ))}
+                              </Select>
+                              <Button className="w-full" size="sm" type="submit" variant="outline">
+                                {t("reader.jumpChapterAction")}
+                              </Button>
+                            </form>
 
-                          <form
-                            className="space-y-2 border-t border-slate-200/80 pt-3"
-                            onSubmit={(event) => {
-                              event.preventDefault();
-                              submitReaderPageJump();
-                            }}
-                          >
-                            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                              {t("reader.jumpPageLabel")}
-                            </label>
-                            <Input
-                              className="h-10 rounded-xl border-slate-300/80 bg-white/88 text-slate-900"
-                              inputMode="numeric"
-                              max={readerManifest.totalPages}
-                              min={1}
-                              onChange={(event) => setReaderJumpPageInput(event.target.value)}
-                              placeholder={t("reader.jumpPagePlaceholder")}
-                              type="number"
-                              value={readerJumpPageInput}
-                            />
-                            <Button className="w-full" disabled={!canJumpToReaderPage} size="sm" type="submit" variant="outline">
-                              {t("reader.jumpPageAction")}
-                            </Button>
-                          </form>
+                            <form
+                              className="space-y-2 border-t border-slate-200/80 pt-3"
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                submitReaderPageJump();
+                              }}
+                            >
+                              <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                {t("reader.jumpPageLabel")}
+                              </label>
+                              <Input
+                                className="h-10 rounded-xl border-slate-300/80 bg-white/88 text-slate-900"
+                                inputMode="numeric"
+                                max={readerManifest.totalPages}
+                                min={1}
+                                onChange={(event) => setReaderJumpPageInput(event.target.value)}
+                                placeholder={t("reader.jumpPagePlaceholder")}
+                                type="number"
+                                value={readerJumpPageInput}
+                              />
+                              <Button className="w-full" disabled={!canJumpToReaderPage} size="sm" type="submit" variant="outline">
+                                {t("reader.jumpPageAction")}
+                              </Button>
+                            </form>
+                          </div>
                         </div>
-                      </div>
-                    ) : null}
+                      ) : null}
+                    </div>
+                    <Button
+                      className={cn("gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]", floatingSurfaceClass)}
+                      onClick={() => setReaderMenuCollapsed(true)}
+                      size="sm"
+                      variant="outline"
+                      title={t("reader.collapseMenu")}
+                    >
+                      <EyeOff className="h-4 w-4" />
+                      {t("reader.collapseMenu")}
+                    </Button>
+                    <Button
+                      className={cn("gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]", floatingSurfaceClass)}
+                      onClick={() => {
+                        setReaderJumpMenuOpen(false);
+                        setReaderMenuCollapsed(false);
+                        setSelectedLibraryID(null);
+                      }}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      {t("library.back")}
+                    </Button>
                   </div>
-                  <Button
-                    className={cn("gap-2 px-3 text-slate-800 hover:bg-[rgba(236,241,246,0.92)]", floatingSurfaceClass)}
-                    onClick={() => {
-                      setReaderJumpMenuOpen(false);
-                      setSelectedLibraryID(null);
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    {t("library.back")}
-                  </Button>
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
+            )}
+
+            {selectedLibraryID && readerMenuCollapsed && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className={cn(
+                  "absolute top-2 right-4 z-20 gap-2 px-2.5 opacity-40 hover:opacity-100",
+                  floatingSurfaceClass
+                )}
+                onClick={() => setReaderMenuCollapsed(false)}
+                title={t("reader.expandMenu")}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
 
             <div className="h-full pt-0">
               {selectedLibraryID && readerQuery.isLoading ? (

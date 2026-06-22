@@ -95,6 +95,8 @@ export const zhCN = {
     jumpPagePlaceholder: "输入总页码",
     jumpPageAction: "跳到该页",
     jumpRange: "可跳转范围：1 - {{total}} 页",
+    collapseMenu: "收起菜单",
+    expandMenu: "展开菜单",
   },
   status: {
     not_downloaded: "未下载",

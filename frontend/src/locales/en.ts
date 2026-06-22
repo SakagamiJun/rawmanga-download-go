@@ -95,6 +95,8 @@ export const en = {
     jumpPagePlaceholder: "Enter total page number",
     jumpPageAction: "Jump to Page",
     jumpRange: "Jump range: 1 - {{total}}",
+    collapseMenu: "Collapse Menu",
+    expandMenu: "Expand Menu",
   },
   status: {
     not_downloaded: "Not downloaded",

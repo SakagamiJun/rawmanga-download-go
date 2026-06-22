@@ -3,7 +3,7 @@
   "name": "klz9-downloader",
   "outputfilename": "klz9-downloader",
   "info": {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "productName": "KLZ9 Downloader",
     "copyright": "Copyright © 2026 (MIT License)",
     "comments": "Built using Wails"

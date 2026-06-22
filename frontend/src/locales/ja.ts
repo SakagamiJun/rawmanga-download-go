@@ -95,6 +95,8 @@ export const ja = {
     jumpPagePlaceholder: "総ページ番号を入力",
     jumpPageAction: "このページへ移動",
     jumpRange: "移動範囲: 1 - {{total}}",
+    collapseMenu: "メニューを折りたたむ",
+    expandMenu: "メニューを展開",
   },
   status: {
     not_downloaded: "未ダウンロード",
