@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,6 +19,27 @@ import (
 	"github.com/sakagamijun/rawmanga-download-go/internal/store"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+//go:embed wails.json
+var wailsConfig embed.FS
+
+type wailsProjectConfig struct {
+	Info struct {
+		Version string `json:"version"`
+	} `json:"info"`
+}
+
+func (a *App) GetAppVersion() string {
+	data, err := wailsConfig.ReadFile("wails.json")
+	if err != nil {
+		return "0.0.0"
+	}
+	var cfg wailsProjectConfig
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return "0.0.0"
+	}
+	return cfg.Info.Version
+}
 
 type App struct {
 	ctx       context.Context

@@ -232,6 +232,10 @@ export class MockAdapter implements AppAdapter {
     return progress;
   }
 
+  async getAppVersion() {
+    return "0.2.0";
+  }
+
   subscribe(eventName: string, callback: Listener) {
     const listeners = this.listeners.get(eventName) ?? new Set<Listener>();
     listeners.add(callback);

@@ -111,6 +111,11 @@ export default function App() {
     queryFn: () => appAdapter.getSettings(),
   });
 
+  const versionQuery = useQuery({
+    queryKey: ["appVersion"],
+    queryFn: () => appAdapter.getAppVersion(),
+  });
+
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: () => appAdapter.listDownloadJobs(),
@@ -891,7 +896,11 @@ export default function App() {
                         </PanelSection>
                       </div>
                     ) : settings ? (
-                      <SettingsForm settings={settings} onSave={(nextSettings) => settingsMutation.mutate(nextSettings)} />
+                      <SettingsForm
+                        settings={settings}
+                        onSave={(nextSettings) => settingsMutation.mutate(nextSettings)}
+                        version={versionQuery.data}
+                      />
                     ) : (
                       <div className="p-3">
                         <div className="border border-dashed border-border/60 px-3 py-5 text-sm text-muted-foreground">
@@ -1093,7 +1102,15 @@ function LibraryGrid({
   );
 }
 
-function SettingsForm({ settings, onSave }: { settings: AppSettings; onSave: (settings: AppSettings) => void }) {
+function SettingsForm({
+  settings,
+  onSave,
+  version,
+}: {
+  settings: AppSettings;
+  onSave: (settings: AppSettings) => void;
+  version?: string;
+}) {
   const { t } = useTranslation();
   const [form, setForm] = useState(settings);
 
@@ -1192,6 +1209,12 @@ function SettingsForm({ settings, onSave }: { settings: AppSettings; onSave: (se
           </Button>
         </form>
       </PanelSection>
+
+      {version && (
+        <div className="pt-2 text-center text-[10px] tracking-[0.1em] text-muted-foreground/60 border-t border-border/40">
+          KLZ9 Downloader v{version}
+        </div>
+      )}
     </div>
   );
 }

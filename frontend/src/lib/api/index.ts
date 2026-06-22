@@ -53,6 +53,9 @@ export const appAdapter: AppAdapter = {
   updateReaderProgress(input) {
     return currentAdapter().updateReaderProgress(input);
   },
+  getAppVersion() {
+    return currentAdapter().getAppVersion();
+  },
   subscribe(eventName, callback) {
     return currentAdapter().subscribe(eventName, callback);
   },

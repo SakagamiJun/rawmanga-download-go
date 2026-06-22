@@ -66,6 +66,10 @@ export class WailsAdapter implements AppAdapter {
     return (await getWailsApp()?.UpdateReaderProgress?.(input)) as ReaderProgress;
   }
 
+  async getAppVersion() {
+    return ((await getWailsApp()?.GetAppVersion?.()) ?? "0.0.0") as string;
+  }
+
   subscribe(eventName: string, callback: (payload: unknown) => void) {
     const runtime = getWailsRuntime();
     const unsubscribe = runtime?.EventsOn?.(eventName, callback);
