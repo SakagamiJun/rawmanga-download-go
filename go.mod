@@ -4,8 +4,8 @@ go 1.26
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/mattn/go-sqlite3 v1.14.49
-	github.com/wailsapp/wails/v2 v2.14.0
+	github.com/mattn/go-sqlite3 v1.14.50
+	github.com/wailsapp/wails/v2 v2.15.0
 	golang.org/x/net v0.58.0
 )
 
